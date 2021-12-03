@@ -1,0 +1,39 @@
+
+ use Cwd;
+use File::Basename;
+use Getopt::Long;
+
+#=================================================
+#$version = "2.0";#genENV -> genTB
+#$version = "2.1";#support sst integration(comp_type:ENV)
+$version = "2.2";#support cvt(axi|apb|ahb), and ral
+#=================================================
+
+$cur_date =`date "+%Y/%m/%d-%H:%M:%S"` ;
+chomp($cur_date);
+
+$env_name = $ARGV[0];
+$env_name=~ s/\.cfg//;
+$my_cwd = getcwd."/";
+$cfg_file = $env_name."\.cfg";
+
+while($my_cwd =~ /\/$env_name\//) {
+  $my_cwd = dirname($my_cwd)."\/";
+  chdir $my_cwd;
+}
+$env_path = $my_cwd.$env_name."\/";
+print "[genTB]: Updating bt/xxx2 first.\n";
+system("\\svn_up ../bt/xxx2");
+if(!-d $env name) {
+  if(!-e $cfg_file){
+    system("\\cp -rf../bt/xxx2/use/cfg_demo/xxx.cfg ./$env_name.cfg");
+    system("gvim $env_name.cfg");
+    print "[genTB]: Do you finish $env name.cfg\n";
+    print "[genTB]: [y|Y] --> Create new $env_name verification environment.\n" print "[genTB]: [n|N] --> Exit.\n";
+    print "[genTB]: Please input:";
+    chomp($choice = <STDIN>);
+    if($choice !~ /y|Y/) {
+      exit;
+    }
+}
+print "[genTB]: Creating $env name. \n";
