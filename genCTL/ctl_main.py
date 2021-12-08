@@ -6,6 +6,8 @@ from submodules import top_init
 import os
 import sys
 import getopt
+sdf 
+sdf
 
 class genCTL_top_pkg():
   def init_(self):
