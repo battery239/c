@@ -87,3 +87,16 @@ class sig_csvobj():
                         self.templist[idx].ctrl_val.append(val)
                     else:
                         self.templist[idx].ctrl.append(i)
+                         else:
+self.templist[idx].ctrl.append(i)
+self.templist[idx].ctrl_val.append(None)
+elif re.match("cb_",l[0]):
+cb=l[0][3:]
+if cb not in self.templist[idx].cb:
+self.templist[idx].cb.append(cb)
+self.templist[idx].cbmode.append(0)
+cb_idx= self.templist[idx].cb.index(cb) 
+self.templist[idx].cbmode[cb_idx] = prop 
+else:
+self.templist[idx].__dict__[l[0]] = prop
+idx +=1
