@@ -1,19 +1,17 @@
 
- #!/usr/bin/env python
+#!/usr/bin/env python
 # coding=utf-8
 from submodules import csvparser_sig
 from submodules import top_init
 import os
 import sys
 import getopt
-sdf 
-sdf
 
 class genCTL_top_pkg():
   def init_(self):
-  self.csvpath='
-  self.template_dir=os.path.split(os.path.abspath(sys.argv[0])) [θ]+'/. ./../utils/' 
-  self.output_dir = os.path.split(os.path.abspath(sys.argv[0])) [θ]+'/../../utils/' 
+    self.csvpath=''
+    self.template_dir=os.path.split(os.path.abspath(sys.argv[0]))[θ]+'/. ./../utils/' 
+    self.output_dir = os.path.split(os.path.abspath(sys.argv[0]))[θ]+'/../../utils/' 
 
 def main(self):
   if not self.csvpath:
@@ -38,18 +36,18 @@ def main(self):
 
 
 if __name__=="__main__":
-run_pkg = genCTL_top_pkg()
-try:
-  opts,args = getopt.getopt(sys.argv[1: ], 'f:o: ')
-  for opt,arg in opts:
-    if opt=='-f':
-      run_pkg.csvpath = str(arg)
-    elif opt=='-o':
-      run_pkg.output_dir = str(arg)+'/'
-except getopt.GetoptError:
-  print "Argument error, program terminated"
-  sys.exit()
+  run_pkg = genCTL_top_pkg()
+  try:
+    opts,args = getopt.getopt(sys.argv[1: ], 'f:o: ')
+    for opt,arg in opts:
+      if opt=='-f':
+        run_pkg.csvpath = str(arg)
+      elif opt=='-o':
+        run_pkg.output_dir = str(arg)+'/'
+  except getopt.GetoptError:
+    print "Argument error, program terminated"
+    sys.exit()
 
-run_pkg.main()
-os.popen('mv '+run_pkg.csvpath+' '+run_pkg.output_dir)
-print "program finished, output dir:"+run_pkg.output_dir
+  run_pkg.main()
+  os.popen('mv '+run_pkg.csvpath+' '+run_pkg.output_dir)
+  print "program finished, output dir:"+run_pkg.output_dir
