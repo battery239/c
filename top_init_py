@@ -7,171 +7,174 @@ import csvparser_sig as cvp
 
 
 def gen(sig_csvobj,tpl_dir,out_dir):
-os.popen('mkdir -p '+out_dir+'/src')
-os.popen('mkdir -p '+out_dir+'/unit_test')
-srcdir=tpl_dir+'/src/'
-src_lst=os.listdir(srcdir)
-unitdir =tpl_dir+'/unit_test/'
-unit_list=os.listdir(unitdir)
-top_cfg(sig_csvobj)
-for fname in src_lst:
-if os.path.isfile(srcdir+fname) and (os.path.splitext(srcdir+fname)[1]!='.swp') and (os.path.
-splitext(srcdir+fname)[1]!=' . swo'):
-workfile = tpl_file(srcdir,fname,sig_csvobj)
-workfile.out(out_dir+'/src/')
-for fname in unit_list:
-if os.path.isfile(unitdir+fname) and (os.path.splitext(unitdir+fname)[1]!='.swp') and (os.path.
-splitext(unitdir+fname)[1]!='.swo'):
-workfile = tpl_file(unitdir,fname,sig_csvobj)
-workfile.out(out_dir+'/unit_test/')
-listf = tpl_file(tpl_dir+'/', 'xxx_utils.list',sig_csvobj)
-listf.out(out_dir+'/')
+    os.popen('mkdir -p '+out_dir+'/src')
+    os.popen('mkdir -p '+out_dir+'/unit_test')
+    srcdir=tpl_dir+'/src/'
+    src_lst=os.listdir(srcdir)
+    unitdir =tpl_dir+'/unit_test/'
+    unit_list=os.listdir(unitdir)
+    top_cfg(sig_csvobj)
+    for fname in src_lst:
+        if os.path.isfile(srcdir+fname) and (os.path.splitext(srcdir+fname)[1]!='.swp') and (os.path.splitext(srcdir+fname)[1]!='.swo'):
+            workfile = tpl_file(srcdir,fname,sig_csvobj)
+            workfile.out(out_dir+'/src/')
+    for fname in unit_list:
+        if os.path.isfile(unitdir+fname) and (os.path.splitext(unitdir+fname)[1]!='.swp') and (os.path.splitext(unitdir+fname)[1]!='.swo'):
+            workfile = tpl_file(unitdir,fname,sig_csvobj)
+            workfile.out(out_dir+'/unit_test/')
+    listf = tpl_file(tpl_dir+'/', 'xxx_utils.list',sig_csvobj)
+    listf.out(out_dir+'/')
 
 def top_cfg(c):#{{{
-if c.ctl_mode=='packet' :#{{{
-data=cvp.sig_inst()
-data.name=c.data_name
-data.width=c.data_width
-data.ctrl.append('bus')
-data.ctrl_val.append('8')
-data.ctrl.append('maxlens')
-data.ctrl_val.append(c.maxlens)
-c.siglist.append(data)
+    if c.ctl_mode=='packet' :#{{{
+        data=cvp.sig_inst()
+        data.name=c.data_name
+        data.width=c.data_width
+        data.ctrl.append('bus')
+        data.ctrl_val.append('8')
+        data.ctrl.append('maxlens')
+        data.ctrl_val.append(c.maxlens)
+        c.siglist.append(data)
+    
+        last=cvp.sig_inst()
+        last.name=c.last_name
+        last.width='1'
+        last.ctrl=['last']
+        last.ctrl_val=['']
+        c.siglist.append(last)
+    
+        if ('sop_name' in c.__dict__) and c.sop_name:
+            sop=cvp.sig_inst()
+            sop.name=c.sop_name
+            sop.width='1'
+            sop.ctrl=['sop']
+            sop.ctrl_val=['']
+            c.siglist.append(sop)
+    
+        if c.mask_mode =='tail':
+            mask=cvp.sig_inst()
+            mask.ctrl.append('cycend')
+            mask.ctrl_val.append('')
+            mask.name=c.mask_name
+            mask.width=str(int(c.data_width)/8)
+            c.siglist.append(mask)
+        elif c.mask_mode == 'offset_A' or c.mask_mode == 'offset_B':
+            mask= cvp.sig_inst()
+            mask.ctrl.append('cycend')
+            mask.ctrl_val.append('')
+            mask.name=c.mask_name
+            mask.width = str(bin(int(c.data_width)/8).count('0')-1)
+            c.siglist.append(mask)
+        elif c.mask_mode=='both':
+            c.direction='msb'
+            mask=cvp.sig_inst()
+            mask.name=c.mask_name
+            mask.width=str(int(c.data_width)/8)
+            c.siglist.append(mask)
+            mask_h=cvp.sig_inst()
+            mask_h.name=c.mask_name+'_h'
+            c.mask_name_h=mask_h.name
+            mask_h.width=str(int(c.data_width)/8)
+            mask_h.self='1'
+            mask_h.ctrl.append('norand')
+            mask_h.ctrl_val.append('')
+            c.siglist.append(mask_h)
+            mask_t=cvp.sig_inst()
+            mask_t.name = c.mask_name+'_t'
+            c.mask_name_t=mask_t.name
+            mask_t.width=str(int(c.data_width)/8)
+            mask_t.self='1'
+            mask_t.ctrl.append('norand')
+            mask_t.self ='1'
+            mask_t.ctrl.append('norand')
+            mask_t.ctrl_val.append('')
+            c.siglist.append(mask_t)
+            startpos =cvp.sig_inst()
+            startpos.name=c.mask_name+'_hbubble'
+            c.mask_name_b=startpos.name
+            startpos.width=str(int(c.data_width)/8)
+            startpos.self='1'
+            c.siglist.append(startpos)
+        #}}}
+    if c.bp_mode == 'bp_cycle':
+        c.bpcycle = True
+        c.bp_mode='bp'
+    if c.bp_mode=='hs':
+        vld=cvp.sig_inst()
+        vld.name=c.vld_name
+        vld.width='1'
+        vld.ctrl=['mon_must','sigonly']
+        vld.ctrl_val=['','']
+        vld.idle_val='0'
+        rdy=cvp.sig_inst()
+        rdy.name=c.rdy_name
+        rdy.width='1'
+        rdy.ctrl = ['drv_must', 'mon_must','sigonly']
+        rdy.ctrl_val=['','','']
+        c.siglist.append(vld)
+        c.siglist.append(rdy)
+    elif c.bp_mode == 'bp':
+        vld=cvp.sig_inst()
+        vld.name=c.vld_name
+        vld.width='1'
+        vld.ctrl=['mon_must','sigonly']
+        vld.ctrl_val=['','']
+        vld.idle_val ='0'
+        c.siglist.append(vld)
+        bp=cvp.sig_inst()
+        bp.name=c.bp_name
+        bp.width='1'
+        bp.ctrl = ['drv_must','sigonly']
+        bp.ctrl_val=['0','']
+        bp.idle_val='0'
+        c.siglist.append(bp)
 
-last=cvp.sig_inst()
-last.name=c.Last_name
-Last.width='1'
-Last.ctrl=['last']
-last.ctrl_val=['']
-c.siglist.append(last)
 
-if ('sop_name' in c.__dict__) and c.sop_name:
-sop=cvp.sig_inst()
-sop.name=c.sop_name
-sop.width='1'
-sop.ctrl=['sop']
-sop.ctrl_val=['']
-c.siglist.append(sop)
-
-if c.mask_mode =='tail':
-mask=cvp.sig_inst()
-mask.ctrl.append('cycend')
-mask.ctrl_val.append('')
-mask.name=c.mask_name
-mask.width=str(int(c.data_width)/8)
-c.siglist.append(mask)
-elif c.mask_mode == 'offset_A' or c.mask_mode == 'offset_B':
-mask= cvp.sig_inst()
-mask.ctrl.append('cycend')
-mask.ctrl_val.append('')
-mask.name=c.mask_name
-mask.width = str(bin(int(c.data_width)/8).count('0')-1)
-c.siglist.append(mask)
-elif c.mask_mode=='both':
-c.direction='msb'
-mask=cvp.sig_inst()
-mask.name=c.mask_name
-mask.width=str(int(c.data_width)/8)
-c.siglist.append(mask)
-mask_h=cvp.sig_inst()
-mask_h.name=c.mask_name+'_h'
-c.mask_name_h=mask_h.name
-mask_h.width=str(int(c.data_width)/8)
-mask_h.self='1'
-mask_h.ctrl.append('norand')
-mask_h.ctrl_val.append('')
-c.siglist.append(mask_h)
-mask_t=cvp.sig_inst()
-mask_t.name = c.mask_name+'_t'
-c.mask_name_t=mask_t.name
-mask_t.width=str(int(c.data_width)/8)
-mask_t.self='1'
-mask_t.ctrl.append('norand')
-mask_t.self ='1'
-mask_t.ctrl.append('norand')
-mask_t.ctrl_val.append('')
-c.siglist.append(mask_t)
-startpos =cvp.sig_inst()
-startpos.name=c.mask_name+'_hbubble'
-c.mask_name_b=startpos.name
-startpos.width=str(int(c.data_width)/8)
-startpos.self='1'
-c.siglist.append(startpos)
+    for s in c.siglist:
+        if 'pack' in s._dict_:
+            wd=0
+            for member in re.split(",*",s.pack):
+                for si in c.siglist:
+                    if si.name==member:
+                        wd+=int(si.width)
+            s.width=wd
+        if not ('self' in s.__dict__):
+            s.cb.append('drv')
+            s.cbmode.append('out')
+            s.cb.append('mon')
+            s.cbmode.append('in')
+            if c.bp_mode=='hs':
+                if s.name==c.rdy_name:
+                    s.cbmode[s.cb.index('drv')]='in'
+            elif c.bp_mode=='bp':
+                if s.name==c.bp_name:
+                    s.cbmode[s.cb.index('drv')]='in'
+        if ('sample_mode' in s.__dict__) and ('@' in s.sample_mode): 
+            s.at=[]
+            for member in re.split("\@*",s.sample_mode):
+                member = member.strip()
+                if member:
+                    s.at.append(member)
 #}}}
-if c.bp_mode == 'bp_cycle':
-c.bpcycle = True
-c.bp_mode='bp'
-if c.bp_mode=='hs':
-vld=cvp.sig_inst()
-vld.name=c.vld_name
-vld.width='1'
-vld.ctrl=['mon_must','sigonly']
-vld.ctrl_val=['','']
-vld.idle_val='0'
-rdy=cvp.sig_inst()
-rdy.name=c.rdy_name
-rdy.width='1'
-rdy.ctrl = ['drv_must', 'mon_must','sigonly']
-rdy.ctrl_val=["','','']
-c.siglist.append(vld)
-c.siglist.append(rdy)
-elif c.bp_mode == 'bp':
-vld=cvp.sig_inst()
-vld.name=c.vld_name
-vld.width='1'
-vld.ctrl=['mon_must','sigonly']
-vld.ctrl_val=['','']
-vld.idle_val ='0'
-c.siglist.append(vld)
-bp=cvp.sig_inst()
-bp.name=c.bp_name
-bp.width='1'
-bp.ctrl = ['drv_must','sigonly']
-bp.ctrl_val=['0','']
-bp.idle_val='0'
-c.siglist.append(bp)
-for s in c.siglist:
-if 'pack' in s._dict_:
-wd=0
-for member in re.split(",*",s.pack):
-for si in c.siglist:
-if si.name==member:
-wd+=int(si.width)
-s.width=wd
-if not ('self' in s._dict_):
-s.cb.append('drv')
-s.cbmode.append('out')
-s.cb.append('mon')
-s.cbmode.append('in')
-if c.bp_mode=='hs':
-if s.name==c.rdy_name:
-s.cbmode[s.cb.index('drv')]='in'
-elif c.bp_mode=='bp':
-if s.name==c.bp_name:
-s.cbmode[s.cb.index('drv')]='in'
-if ('sample_mode' in s._dict_) and ('@' in s.sample_mode): s.at=[]
-for member in re.split("\@*",s.sample_mode):
-member = member.strip()
-if member:
-s.at.append(member)
-#}}}
-class tpl file:
-def init_(self,fdir,fname,sig_csvobj):
-self.tplfile= open(fdir+fname,"r")
-self.fname=fname
-self.top_name = sig_csvobj.top_name
-self.csvobj=sig_csvobj
-self.outlines=[]
-self.infile()
-self.init_cb()
-self.filemode()
-self.cleanup()
+
+class tpl_file:
+    def __init__(self,fdir,fname,sig_csvobj):
+        self.tplfile= open(fdir+fname,"r")
+        self.fname=fname
+        self.top_name = sig_csvobj.top_name
+        self.csvobj=sig_csvobj
+        self.outlines=[]
+        self.infile()
+        self.init_cb()
+        self.filemode()
+        self.cleanup()
+
 def infile(self):#{{{
-for line in self.tplfile:
-self.outlines,append(line)
-for line in self.tplfile:
-self.outlines.append(Line)
-self.tplfile.close()#}}}
+    for line in self.tplfile:
+        self.outlines.append(line)
+    for line in self.tplfile:
+        self.outlines.append(line)
+    self.tplfile.close()#}}}
 
 def cleanup(self):#{{{
 swap_en =0
