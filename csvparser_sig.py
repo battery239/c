@@ -98,5 +98,5 @@ self.templist[idx].cbmode.append(0)
 cb_idx= self.templist[idx].cb.index(cb) 
 self.templist[idx].cbmode[cb_idx] = prop 
 else:
-self.templist[idx].__dict__[l[0]] = prop
+    self.templist[idx].__dict__[l[0]] = prop
 idx +=1
